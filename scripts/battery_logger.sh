@@ -116,6 +116,22 @@ show_terminal_interface() {
     echo "=================================================================="
 }
 
+# Function to show progress bar for max time
+show_progress_bar() {
+    local elapsed=$1
+    local max_time=$2
+    local progress=$(( (elapsed * 100) / max_time ))
+    local bar_length=40
+    local filled_length=$(( (progress * bar_length) / 100 ))
+    local empty_length=$(( bar_length - filled_length ))
+
+    # Generate progress bar
+    bar=$(printf "%${filled_length}s" | tr ' ' '#')
+    empty=$(printf "%${empty_length}s")
+
+    printf "\rProgress: |${bar}${empty}| %d%%" "$progress"
+}
+
 # Track runtime
 START_TIME=$(date +%s)
 
@@ -127,7 +143,7 @@ while true; do
     # Exit if the maximum runtime is reached (if MAX_TIME > 0)
     if (( MAX_TIME > 0 && ELAPSED_TIME >= MAX_TIME )); then
         echo "Reached maximum runtime of $MAX_TIME seconds. Exiting."
-        exit 0
+        break
     fi
 
     # Log battery status
@@ -136,6 +152,14 @@ while true; do
     # Display the terminal interface if enabled
     if (( DISPLAY_INTERFACE )); then
         show_terminal_interface
+    fi
+
+    # Show progress bar if max time is specified
+    if (( MAX_TIME > 0 )); then
+        show_progress_bar "$ELAPSED_TIME" "$MAX_TIME"
+    else
+        # Show message if no time limit is set
+        printf "\rRunning indefinitely... Press CTRL+C to stop.\n"
     fi
 
     # Sleep for the specified interval

@@ -50,6 +50,8 @@ chmod +x battery_logger.sh
 - `-h, --help`  
   Display the help message.
 
+To exit the script, press `Ctrl+C`.
+
 ### Example:
     
 - To log **first battery** data every **30 seconds** to a file named `battery_0_log.csv` indefinitely:
@@ -73,19 +75,21 @@ The terminal interface displays real-time battery data and log file size. It is 
 Log File: battery_log.csv
 Interval: 2 seconds
 Battery Path: /sys/class/power_supply/BAT0
-Start Time: Wed Dec  4 08:59:00 AM EST 2024
+Start Time: Wed Dec  4 09:04:39 AM EST 2024
 ==================================================================
 Current Log File Size: 4.0K
 
 ======================== Current Battery Data =====================
-current_now      : 1867000 µA
-charge_now       : 4936000 µAh
-capacity         : 94 %
-voltage_now      : 17556000 µV
+current_now      : 1353000 µA
+charge_now       : 5081000 µAh
+capacity         : 96 %
+voltage_now      : 17583000 µV
 temperature      : 27.8 °C
 charging status  : Charging
 ==================================================================
+Progress: |########################                | 60%
 ```
+
 ## Notes
 
 - **current_now** : Current in microamperes.
