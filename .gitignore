@@ -2,7 +2,10 @@
 data/*
 
 # Graphs
-graphs/*
+graph/*
+
+# Reports
+report/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
