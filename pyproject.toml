@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "battery-characterizer"
+version = "0.0.1"
+description = "Simple scripts to characterize my laptop battery"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {file = "LICENSE"}
+authors = [
+    { name = "AntoninPvr"}
+]
+dependencies = [
+    "matplotlib^3.0",
+    "pandas^2.0"
+]
