@@ -2,8 +2,8 @@
 data/*
 *.csv
 
-# Graphs
-graph/*
+# Analysis
+analysis/*
 
 # Reports
 report/*

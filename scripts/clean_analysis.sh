@@ -7,7 +7,7 @@ if [ -z "$PROJECT_DIR" ]; then
 fi
 
 # Directories to purge files from
-dirs=("graph" "report")
+dirs=("analysis" "reports")
 
 # Loop through each directory in PROJECT_DIR
 for dir in "${dirs[@]}"; do

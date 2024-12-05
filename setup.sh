@@ -10,9 +10,9 @@ export PROJECT_DIR
 echo "PROJECT_DIR is set to $PROJECT_DIR"
 
 # Add an alias to run the clean script
-alias clean="bash $PROJECT_DIR/script/clean_analysis.sh"
+alias clean="bash $PROJECT_DIR/scripts/clean_analysis.sh"
 echo "Alias 'clean_analysis' has been set to run the clean script."
 
 # Add an alias to run the purge script
-alias purge="bash $PROJECT_DIR/script/purge_data.sh"
+alias purge="bash $PROJECT_DIR/scripts/purge_data.sh"
 echo "Alias 'purge_data' has been set to run the purge script."
