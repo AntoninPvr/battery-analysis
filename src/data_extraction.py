@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # Define input and output paths
 csv_file = "battery_log.csv"  # Path to your CSV file
-graph_folder = "graphs"       # Folder where the graphs will be saved
+graph_folder = "graph"       # Folder where the graphs will be saved
 
 # Create the graph folder if it doesn't exist
 if not os.path.exists(graph_folder):

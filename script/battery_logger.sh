@@ -13,6 +13,11 @@ BATTERY_PATH=$(find /sys/class/power_supply/ -name "BAT*" | head -n 1)
 MAX_TIME=0  # 0 indicates indefinite runtime
 DISPLAY_INTERFACE=1  # 1 to display interface, 0 to disable
 
+# Initialize variables
+
+# To store the current interface output and update it at each iteration
+interface_output=""
+
 # Function to display help
 show_help() {
     echo "Usage: $0 [-o OUTPUT_FILE] [-i INTERVAL] [-b BATTERY_PATH] [-t MAX_TIME] [--no-interface]"
@@ -65,9 +70,15 @@ if [ ! -d "$BATTERY_PATH" ]; then
     exit 1
 fi
 
-# Ensure the log file exists and has a header
-if [ ! -f "$LOG_FILE" ]; then
-    echo "Timestamp,Current (µA),Voltage (µV),Capacity (%),Charge (µAh),Temperature (°C),Charging" > "$LOG_FILE"
+# Skip reporting if LOG_FILE is empty or unset
+if [ -z "$LOG_FILE" ] || [ "$LOG_FILE" == "battery_log.csv" ]; then
+    REPORT_ENABLED=0
+else
+    REPORT_ENABLED=1
+    # Ensure the log file exists and has a header if reporting is enabled
+    if [ ! -f "$LOG_FILE" ]; then
+        echo "Timestamp,Current (µA),Voltage (µV),Capacity (%),Charge (µAh),Temperature (°C),Charging" > "$LOG_FILE"
+    fi
 fi
 
 # Function to fetch values and append to log file
@@ -92,44 +103,53 @@ log_battery_status() {
         CHARGING=1
     fi
 
-    echo "$TIMESTAMP,$CURRENT,$VOLTAGE,$CAPACITY,$CHARGE,$TEMPERATURE,$CHARGING" >> "$LOG_FILE"
+    if (( REPORT_ENABLED )); then
+        echo "$TIMESTAMP,$CURRENT,$VOLTAGE,$CAPACITY,$CHARGE,$TEMPERATURE,$CHARGING" >> "$LOG_FILE"
+    fi
 }
 
 # Function to display the terminal interface with cleaner formatting
 show_terminal_interface() {
-    clear
-    echo "========================= BATTERY LOGGER ========================="
-    echo "Log File: $LOG_FILE"
-    echo "Interval: $INTERVAL seconds"
-    echo "Battery Path: $BATTERY_PATH"
-    echo "Start Time: $(date -d @$START_TIME)"
-    echo "=================================================================="
-    echo "Current Log File Size: $(du -h "$LOG_FILE" | cut -f1)"
-    echo
-    echo "======================== Current Battery Data ====================="
-    echo "current_now      : $CURRENT µA"
-    echo "charge_now       : $CHARGE µAh"
-    echo "capacity         : $CAPACITY %"
-    echo "voltage_now      : $VOLTAGE µV"
-    echo "temperature      : $TEMPERATURE °C"
-    echo "charging status  : $STATUS"
-    echo "=================================================================="
+    # Accumulate all interface information into a variable
+    interface_output="========================= BATTERY LOGGER =========================\n"
+    interface_output+="Log File: $LOG_FILE\n"
+    interface_output+="Interval: $INTERVAL seconds\n"
+    interface_output+="Battery Path: $BATTERY_PATH\n"
+    interface_output+="Start Time: $(date -d @$START_TIME)\n"
+
+    # Only include log file size if REPORT_ENABLED is 1 and LOG_FILE exists
+    if [ "$REPORT_ENABLED" -eq 1 ] && [ -f "$LOG_FILE" ]; then
+        interface_output+="==================================================================\n"
+        interface_output+="Current Log File Size: $(du -h "$LOG_FILE" | cut -f1)\n"
+    fi
+
+    interface_output+="\n"
+    interface_output+="======================== Current Battery Data =====================\n"
+    interface_output+="current_now      : $CURRENT µA\n"
+    interface_output+="charge_now       : $CHARGE µAh\n"
+    interface_output+="capacity         : $CAPACITY %\n"
+    interface_output+="voltage_now      : $VOLTAGE µV\n"
+    interface_output+="temperature      : $TEMPERATURE °C\n"
+    interface_output+="charging status  : $STATUS\n"
+    interface_output+="==================================================================\n"
 }
 
 # Function to show progress bar for max time
 show_progress_bar() {
     local elapsed=$1
     local max_time=$2
-    local progress=$(( (elapsed * 100) / max_time ))
+    local remaining=$((max_time - elapsed))
+    local remaining_minutes=$((remaining / 60))
+    local remaining_seconds=$((remaining % 60))
     local bar_length=40
-    local filled_length=$(( (progress * bar_length) / 100 ))
+    local filled_length=$(( (elapsed * bar_length) / max_time ))
     local empty_length=$(( bar_length - filled_length ))
 
     # Generate progress bar
     bar=$(printf "%${filled_length}s" | tr ' ' '#')
     empty=$(printf "%${empty_length}s")
 
-    printf "\rProgress: |${bar}${empty}| %d%%" "$progress"
+    interface_output+="\rProgress: |${bar}${empty}| Remaining Time: $(printf "%02d:%02d" "$remaining_minutes" "$remaining_seconds")"
 }
 
 # Track runtime
@@ -146,20 +166,22 @@ while true; do
         break
     fi
 
-    # Log battery status
+    # show battery status
     log_battery_status
 
     # Display the terminal interface if enabled
     if (( DISPLAY_INTERFACE )); then
+        clear  # Only clear once per iteration
         show_terminal_interface
-    fi
 
-    # Show progress bar if max time is specified
-    if (( MAX_TIME > 0 )); then
-        show_progress_bar "$ELAPSED_TIME" "$MAX_TIME"
-    else
-        # Show message if no time limit is set
-        printf "\rRunning indefinitely... Press CTRL+C to stop.\n"
+        # Show progress bar if max time is specified
+        if (( MAX_TIME > 0 )); then
+            show_progress_bar "$ELAPSED_TIME" "$MAX_TIME"
+        else
+            # Show message if no time limit is set
+            interface_output+="\rRunning indefinitely... Press CTRL+C to stop.\n"
+        fi
+        echo -e "$interface_output"
     fi
 
     # Sleep for the specified interval

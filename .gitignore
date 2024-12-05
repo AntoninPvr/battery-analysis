@@ -1,5 +1,6 @@
 # battery logs files
 data/*
+*.csv
 
 # Graphs
 graph/*
