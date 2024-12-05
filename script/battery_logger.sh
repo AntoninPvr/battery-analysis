@@ -161,8 +161,10 @@ while true; do
     ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
 
     # Exit if the maximum runtime is reached (if MAX_TIME > 0)
-    if (( MAX_TIME > 0 && ELAPSED_TIME >= MAX_TIME )); then
-        echo "Reached maximum runtime of $MAX_TIME seconds. Exiting."
+    if (( MAX_TIME > 0 && ELAPSED_TIME >= MAX_TIME)); then
+        if (( DISPLAY_INTERFACE )); then
+            echo "Reached maximum runtime of $MAX_TIME seconds. Exiting."
+        fi
         break
     fi
 
